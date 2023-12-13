@@ -1,0 +1,88 @@
+
+// Posture2 Watch App
+// Created by Roman Str on 25.11.2023.
+//
+
+import SwiftUI
+import CoreMotion
+import WatchConnectivity
+
+var motion = CMMotionManager()
+
+struct ContentView: View {
+@State var textTox = "x"
+@State var textToy = "y"
+@State var musicToggle = false
+@State var musi = 1;
+
+
+
+func sendtoIphon() {
+// let watchSessionDelegate = WatchSessionDelegate()
+
+
+}
+
+
+func startAccelerometerUpdates() {
+motion.accelerometerUpdateInterval = 0.01
+motion.startAccelerometerUpdates(to: OperationQueue.current!) { data, error in
+if let accelerometerData = data {
+self.textTox = "\(accelerometerData.acceleration.x)"
+self.textToy = "\(accelerometerData.acceleration.y)"
+self.playSoundBasedOnAcceleration(data: accelerometerData)
+
+
+// print(accelerometerData)
+}
+}
+}
+
+func playSoundBasedOnAcceleration(data: CMAccelerometerData) {
+guard musicToggle else { return }
+
+self.musi += 1
+print(self.musi)
+if (self.musi > 100) {
+if data.acceleration.y > 0.9 {
+self.musi = 0
+WKInterfaceDevice.current().play(.success)
+WKInterfaceDevice.current().play(.retry)
+WKInterfaceDevice.current().play(.stop)
+WKInterfaceDevice.current().play(.click)
+} else if data.acceleration.y < -0.9 {
+self.musi = 0
+WKInterfaceDevice.current().play(.notification)
+}
+
+if data.acceleration.x > 0.9 {
+self.musi = 0
+WKInterfaceDevice.current().play(.failure)
+} else if data.acceleration.x < -0.9 {
+self.musi = 0
+WKInterfaceDevice.current().play(.directionUp)
+}
+}
+}
+
+var body: some View {
+VStack {
+Button("start") {
+// textTo = "steps "
+startAccelerometerUpdates()
+}
+Toggle(isOn: $musicToggle, label: {
+Text("Toggle Music")
+})
+
+Text(textTox)
+Text(textToy)
+}
+.padding()
+}
+}
+
+#Preview {
+ContentView()
+}
+
